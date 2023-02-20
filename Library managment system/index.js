@@ -1,105 +1,140 @@
-console.log("This is index.js");
-// Todos"
-// 1. Store all the data to the localStorage
-// 2. Give another column as an option to delete the book
-// 3. Add a scroll bar to the view
+// First i need to access book name value 
+// I need to access issue to value 
+// get the current time and date using js 
+// set the status as not returned 
+// add these items in array when user clicks on issue book
 
-// Constructor
-function Book(  ID ,BookName,IssuedTo, IssuedDateAndTime, status) {
-    this.ID = ID;
-    this.BookName = BookName;
-    this.IssuedTo = IssuedTo;
-    this.IssuedDateAndTime = IssuedDateAndTime
-    this.status = status;
+const bookNameElement = document.getElementById('book-name');
+const issueToElement = document.getElementById("issue-to");
+const btnElement = document.getElementById('btn');
+const tableBody = document.querySelector("tbody");
+const books = [
+];
+
+function handleEdit(event) {
+   const buttonElement  = event.target;
+   console.log(buttonElement);
+    const id = buttonElement.id;
+
+   if (buttonElement.textContent === 'Edit') {
+    event.target.textContent = "Save";
+    const parentElement = buttonElement.parentElement;
+
+    parentElement.removeChild(parentElement.firstChild);
+
+    const input = document.createElement("input");
+    input.id = 'status-inp';
+    input.value = books[id - 1].status;
+    parentElement.insertBefore(input, event.target);
+   } 
+   else{
+      const statusElement = document.getElementById('status-inp');
+      books[id - 1].status = statusElement.value;
+      renderBooksInsideTable();
+   }
+
+}
+function createTableRow (data, tableBody, bookId) {
+    // First create a tr
+    //  const tr = `
+    //   <tr>
+    //     <td> ${index} </td>
+    //     <td> ${data.name} </td>
+    //     <td> ${data.status} </td>
+    //   </tr>
+    //  `;
+
+    //  tableBody.innerHtml += tr;
+
+    const tr = document.createElement("tr");
+    // create 5 ths and add data inside it
+
+    const idTd = document.createElement("td");
+    idTd.textContent = bookId;
+
+    const bookNameTd = document.createElement("td");
+    bookNameTd.textContent = data.name;
+
+     const issueToTd = document.createElement("td");
+     issueToTd.textContent = data.issuedTo;
+
+
+    const issuedAtTd = document.createElement("td");
+    issuedAtTd.textContent = data.issuedAt;
+
+    const statusTd = document.createElement("td");
+    statusTd.classList.add('flex');
+
+    const button = document.createElement('button');
+    const span = document.createElement('span');
+
+    span.textContent = data.status;
+    const className = data.status === "not returned" ? "red" : "green";
+    span.classList.add(className);
+
+    button.textContent = 'Edit';
+    button.id = bookId;
+    button.addEventListener("click", handleEdit);
+
+    statusTd.appendChild(span);
+    statusTd.appendChild(button);
+     
+    // add these ths in tr 
+
+    tr.appendChild(idTd);
+    tr.appendChild(bookNameTd);
+    tr.appendChild(issueToTd);
+    tr.appendChild(issuedAtTd);
+    tr.appendChild(statusTd);
+
+    // add this tr in tbody
+    tableBody.appendChild(tr);
 }
 
-// Display Constructor
-function Display() {
+/**
+ * This will render all items present in the books into table
+ */
+function renderBooksInsideTable() {
 
+    // while(tableBody.firstChild) {
+    //     tableBody.removeChild(tableBody.firstChild)
+    // }
+
+    tableBody.innerHTML = "";
+
+   books.map(function (book, index) {
+
+    // This will create a row and add it inside tbody
+    createTableRow(book, tableBody,index+1);
+   })
 }
 
-// Add methods to display prototype
-Display.prototype.add = function (book) {
-    console.log("Adding to UI");
-    tableBody = document.getElementById('tableBody');
-    let uiString = `<tr>
-                       <td>${book.ID}</td>
-                        <td>${book.BookName}</td>
-                        <td>${book.IssuedTo}</td>
-                        <td>${book.IssuedDateAndTime}</td>
-                        <td>${book.status}</td>
-                    </tr>`;
-    tableBody.innerHTML += uiString;
-}
+function handleFormSubmit () {
+    // read book data 
+    const bookName = bookNameElement.value;
+    bookNameElement.value = "";
 
-// Implement the clear function
-Display.prototype.clear = function () {
-    let libraryForm = document.getElementById('libraryForm');
-    libraryForm.reset();
-}
+    // read issued to data 
+    const issuedTo = issueToElement.value;
+    issueToElement.value = "";
 
-// Implement the validate function
-Display.prototype.validate = function (book) {
-    if (book.name.length < 2 || book.author.length < 2) {
-        return false
+    // create a book object with issueAd and default status
+
+    if(bookName && issuedTo) {
+        const book = {
+          name: bookName,
+          issuedTo: issuedTo,
+          issuedAt: new Date().toUTCString().substring(0,12),
+          status: "not returned",
+        };
+
+        books.push(book);
+        renderBooksInsideTable();
     }
     else {
-        return true;
+        alert("You are trying to enter empty details");
     }
-}
-Display.prototype.show = function (type, displayMessage) {
-    let message = document.getElementById('message');
-    message.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                            <strong>Messge:</strong> ${displayMessage}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                            </button>
-                        </div>`;
-    setTimeout(function () {
-        message.innerHTML = ''
-    }, 2000);
-
-}
-
-
-// Add submit event listener to libraryForm
-let libraryForm = document.getElementById('libraryForm');
-libraryForm.addEventListener('submit', libraryFormSubmit);
-
-function libraryFormSubmit(e) {
-    console.log('YOu have submitted library form');
-    let BookName = document.getElementById('BookName').value;
-    let IssuedTo = document.getElementById('IssuedTo').value;
     
-    let fiction = document.getElementById('fiction');
-    let programming = document.getElementById('programming');
-    let cooking = document.getElementById('cooking');
-
-    if (fiction.checked) {
-        type = fiction.value;
-    }
-    else if (programming.checked) {
-        type = programming.value;
-    }
-    else if (cooking.checked) {
-        type = cooking.value;
-    }
-
-    let book = new Book(BookName, IssuedTo);
-    console.log(book);
-
-    let display = new Display();
-
-    if (display.validate(book)) {
-
-        display.add(book);
-        display.clear();
-        display.show('success', 'Your book has been successfully added')
-    }
-    else {
-        // Show error to the user
-        display.show('danger', 'Sorry you cannot add this book');
-    }
-
-    e.preventDefault();
 }
+
+btnElement.addEventListener('click', handleFormSubmit);
